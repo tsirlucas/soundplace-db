@@ -1,4 +1,4 @@
-begin;
-\i create_schema.sql
-\i create_tables.sql
-commit;
+BEGIN;
+\ir create_schema.sql
+\ir create_tables.sql
+COMMIT;
