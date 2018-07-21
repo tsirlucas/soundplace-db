@@ -37,6 +37,13 @@ CREATE TABLE soundplace.track_data
   album_id text REFERENCES soundplace.album_data (id) NOT NULL
 );
 
+CREATE TABLE soundplace.spotify_auth
+(
+  user_id text REFERENCES soundplace.user_data (id) NOT NULL,
+  access_token text NOT NULL,
+  refresh_token text NOT NULL
+);
+
 -- RELATIONSHIP
 
 CREATE TABLE soundplace.playlist_track
