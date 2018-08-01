@@ -15,29 +15,15 @@ CREATE TABLE soundplace.playlist_data
   user_id text REFERENCES soundplace.user_data (id) NOT NULL
 );
 
-CREATE TABLE soundplace.album_data
-(
-  id text PRIMARY KEY,
-  name text NOT NULL,
-  cover text
-);
-
-CREATE TABLE soundplace.artist_data
-(
-  id text PRIMARY KEY,
-  name text NOT NULL
-);
-
 CREATE TABLE soundplace.track_data
 (
   id text PRIMARY KEY,
   name text NOT NULL,
-  duration numeric NOT NULL,
-  artist_id text REFERENCES soundplace.artist_data (id) NOT NULL,
-  album_id text REFERENCES soundplace.album_data (id) NOT NULL
+  channel text NOT NULL,
+  cover text NOT NULL
 );
 
-CREATE TABLE soundplace.spotify_auth
+CREATE TABLE soundplace.youtube_auth
 (
   user_id text PRIMARY KEY NOT NULL,
   access_token text NOT NULL,
