@@ -1,0 +1,4 @@
+BEGIN;
+\ir create_schema.psql
+\ir create_tables.psql
+COMMIT;
