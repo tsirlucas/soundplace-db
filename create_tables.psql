@@ -44,23 +44,18 @@ CREATE TABLE soundplace.playlist_track
 CREATE FUNCTION table_update_notify() RETURNS trigger AS $$
 BEGIN
   IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
-  	PERFORM pg_notify(TG_ARGV[0], row_to_json(NEW)::text);
+  	PERFORM pg_notify(TG_ARGV[0], json_build_object('entity', TG_ARGV[0], 'operation', TG_OP, 'item', row_to_json(NEW))::text);
   ELSE
-  	PERFORM pg_notify(TG_ARGV[0], row_to_json(OLD)::text);
+  	PERFORM pg_notify(TG_ARGV[0], json_build_object('entity', TG_ARGV[0], 'operation', TG_OP, 'item', row_to_json(OLD))::text);
   END IF;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER user_data_notify_insert AFTER INSERT ON soundplace.user_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('ADD_USER');
-CREATE TRIGGER user_data_notify_update AFTER UPDATE ON soundplace.user_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('UPDATE_USER');
-CREATE TRIGGER user_data_notify_delete AFTER DELETE ON soundplace.user_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('REMOVE_USER');
-CREATE TRIGGER playlist_data_notify_insert AFTER INSERT ON soundplace.playlist_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('ADD_PLAYLIST');
-CREATE TRIGGER playlist_data_notify_update AFTER UPDATE ON soundplace.playlist_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('UPDATE_PLAYLIST');
-CREATE TRIGGER playlist_data_notify_delete AFTER DELETE ON soundplace.playlist_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('REMOVE_PLAYLIST');
-CREATE TRIGGER track_data_notify_insert AFTER INSERT ON soundplace.track_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('ADD_TRACK');
-CREATE TRIGGER track_data_notify_update AFTER UPDATE ON soundplace.track_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('UPDATE_TRACK');
-CREATE TRIGGER track_data_notify_delete AFTER DELETE ON soundplace.track_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('REMOVE_TRACK');
-CREATE TRIGGER playlist_track_notify_insert AFTER INSERT ON soundplace.playlist_track FOR EACH ROW EXECUTE PROCEDURE table_update_notify('ADD_PLAYLIST_TRACK');
-CREATE TRIGGER playlist_track_notify_update AFTER UPDATE ON soundplace.playlist_track FOR EACH ROW EXECUTE PROCEDURE table_update_notify('UPDATE_PLAYLIST_TRACK');
-CREATE TRIGGER playlist_track_notify_delete AFTER DELETE ON soundplace.playlist_track FOR EACH ROW EXECUTE PROCEDURE table_update_notify('REMOVE_PLAYLIST_TRACK');
+CREATE TRIGGER user_data_notify_update AFTER UPDATE ON soundplace.user_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('USER');
+CREATE TRIGGER playlist_data_notify_insert AFTER INSERT ON soundplace.playlist_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('PLAYLIST');
+CREATE TRIGGER playlist_data_notify_update AFTER UPDATE ON soundplace.playlist_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('PLAYLIST');
+CREATE TRIGGER playlist_data_notify_delete AFTER DELETE ON soundplace.playlist_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('PLAYLIST');
+CREATE TRIGGER track_data_notify_update AFTER UPDATE ON soundplace.track_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('TRACK');
+CREATE TRIGGER playlist_track_notify_insert AFTER INSERT ON soundplace.playlist_track FOR EACH ROW EXECUTE PROCEDURE table_update_notify('PLAYLIST_TRACK');
+CREATE TRIGGER playlist_track_notify_delete AFTER DELETE ON soundplace.playlist_track FOR EACH ROW EXECUTE PROCEDURE table_update_notify('PLAYLIST_TRACK');
