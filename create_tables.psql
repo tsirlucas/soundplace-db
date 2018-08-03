@@ -11,7 +11,6 @@ CREATE TABLE soundplace.playlist_data
 (
   id text PRIMARY KEY,
   name text NOT NULL,
-  cover text,
   user_id text REFERENCES soundplace.user_data (id) NOT NULL
 );
 
@@ -20,7 +19,16 @@ CREATE TABLE soundplace.track_data
   id text PRIMARY KEY,
   name text NOT NULL,
   channel text NOT NULL,
-  cover text NOT NULL
+);
+
+CREATE TABLE soundplace.cover_data
+(
+  id serial PRIMARY KEY,
+  playlist_id text REFERENCES soundplace.playlist_data UNIQUE,
+  track_id text REFERENCES soundplace.track_data UNIQUE,
+  small text,
+  medium text,
+  big text
 );
 
 CREATE TABLE soundplace.youtube_auth
@@ -59,3 +67,4 @@ CREATE TRIGGER playlist_data_notify_delete AFTER DELETE ON soundplace.playlist_d
 CREATE TRIGGER track_data_notify_update AFTER UPDATE ON soundplace.track_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('TRACK');
 CREATE TRIGGER playlist_track_notify_insert AFTER INSERT ON soundplace.playlist_track FOR EACH ROW EXECUTE PROCEDURE table_update_notify('PLAYLIST_TRACK');
 CREATE TRIGGER playlist_track_notify_delete AFTER DELETE ON soundplace.playlist_track FOR EACH ROW EXECUTE PROCEDURE table_update_notify('PLAYLIST_TRACK');
+CREATE TRIGGER cover_data_notify_update AFTER UPDATE ON soundplace.cover_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('COVER');
