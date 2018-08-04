@@ -4,7 +4,8 @@ CREATE TABLE soundplace.user_data
 (
   id text PRIMARY KEY,
   name text NOT NULL,
-  image text
+  image text,
+  importing boolean
 );
 
 CREATE TABLE soundplace.playlist_data
