@@ -1,0 +1,71 @@
+-- TABLES
+
+CREATE TABLE soundplace.user_data
+(
+  id text PRIMARY KEY,
+  name text NOT NULL,
+  image text,
+  importing boolean
+);
+
+CREATE TABLE soundplace.playlist_data
+(
+  id text PRIMARY KEY,
+  name text NOT NULL,
+  user_id text REFERENCES soundplace.user_data (id) NOT NULL
+);
+
+CREATE TABLE soundplace.track_data
+(
+  id text PRIMARY KEY,
+  name text NOT NULL,
+  channel text NOT NULL,
+);
+
+CREATE TABLE soundplace.cover_data
+(
+  id serial PRIMARY KEY,
+  playlist_id text REFERENCES soundplace.playlist_data UNIQUE,
+  track_id text REFERENCES soundplace.track_data UNIQUE,
+  small text,
+  medium text,
+  big text
+);
+
+CREATE TABLE soundplace.youtube_auth
+(
+  user_id text PRIMARY KEY NOT NULL,
+  access_token text NOT NULL,
+  refresh_token text NOT NULL
+);
+
+-- RELATIONSHIP
+
+CREATE TABLE soundplace.playlist_track
+(
+  playlist_id text REFERENCES soundplace.playlist_data (id) NOT NULL,
+  track_id text REFERENCES soundplace.track_data (id) NOT NULL,
+  CONSTRAINT playlist_track_pkey PRIMARY KEY (playlist_id, track_id)
+);
+
+-- PUBSUBs
+
+CREATE FUNCTION table_update_notify() RETURNS trigger AS $$
+BEGIN
+  IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
+  	PERFORM pg_notify(TG_ARGV[0], json_build_object('entity', TG_ARGV[0], 'operation', TG_OP, 'item', row_to_json(NEW))::text);
+  ELSE
+  	PERFORM pg_notify(TG_ARGV[0], json_build_object('entity', TG_ARGV[0], 'operation', TG_OP, 'item', row_to_json(OLD))::text);
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER user_data_notify_update AFTER UPDATE ON soundplace.user_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('USER');
+CREATE TRIGGER playlist_data_notify_insert AFTER INSERT ON soundplace.playlist_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('PLAYLIST');
+CREATE TRIGGER playlist_data_notify_update AFTER UPDATE ON soundplace.playlist_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('PLAYLIST');
+CREATE TRIGGER playlist_data_notify_delete AFTER DELETE ON soundplace.playlist_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('PLAYLIST');
+CREATE TRIGGER track_data_notify_update AFTER UPDATE ON soundplace.track_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('TRACK');
+CREATE TRIGGER playlist_track_notify_insert AFTER INSERT ON soundplace.playlist_track FOR EACH ROW EXECUTE PROCEDURE table_update_notify('PLAYLIST_TRACK');
+CREATE TRIGGER playlist_track_notify_delete AFTER DELETE ON soundplace.playlist_track FOR EACH ROW EXECUTE PROCEDURE table_update_notify('PLAYLIST_TRACK');
+CREATE TRIGGER cover_data_notify_update AFTER UPDATE ON soundplace.cover_data FOR EACH ROW EXECUTE PROCEDURE table_update_notify('COVER');
